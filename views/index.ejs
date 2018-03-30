@@ -1,0 +1,64 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<title>Trigger flow calls</title>
+
+	<!-- CSS (load bootstrap from a CDN) -->
+	<script src="/js/jquery-2.0.3.min.js"> </script>
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/bootstrap-theme.css">
+	<script src="/js/bootstrap.min.js"> </script>
+	<link rel="stylesheet" href="/css/lmisstyle.css">
+	<style>
+		body    { padding-top:50px; }
+	</style>
+	<script>
+		function updateListContact()
+		{
+			return ;
+		}
+	</script>
+</head>
+<body class="container">
+
+<main>
+    <div class="jumbotron">
+        <h4>Start queued flow call</h4>
+	
+	<form action="/startflows" method="POST">
+	<p>
+	Groups:
+	<select  id="group_select" name="group_select">
+		<% groups.forEach(function(group) { %>
+			<option value="<%= group.uuid %>"><%= group.name %></option>
+		<% }); %>
+	</select>
+	</p>
+	<p>
+	Flows:
+	<select  id="flow_select" name="flow_select">
+		<% flows.forEach(function(flow) { %>
+			<option value="<%= flow.uuid %>"><%= flow.name %></option>
+		<% }); %>
+	</select>
+	</p>
+	minutes:
+	<select  id="interval_select" name="interval_select">
+		<% for(var i=2;i<=10; i+=2){ %>
+			<option value="<%= i %>"><%= i %></option>
+		<% }%>
+	</select>
+	<!--input type="text" class="form-control" id="interval" name="interval"-->
+	<p>
+	<button type="submit" class="btn btn-default" >Submit</button>
+	</p>
+	</form>
+    </div>
+</main>
+
+<footer>
+    
+</footer>
+
+</body>
+</html>

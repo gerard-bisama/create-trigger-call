@@ -1,0 +1,10 @@
+.container#login
+{
+	width:500px;
+	max-width:50%
+	
+}
+.button-panel
+{
+float: right;
+}
