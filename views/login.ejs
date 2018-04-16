@@ -1,0 +1,54 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<title>Trigger flow calls</title>
+
+	<!-- CSS (load bootstrap from a CDN) -->
+	<script src="/js/jquery-2.0.3.min.js"> </script>
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/bootstrap-theme.css">
+	<script src="/js/bootstrap.min.js"> </script>
+	<link rel="stylesheet" href="/css/lmisstyle.css">
+	<style>
+		body    { padding-top:50px; }
+		.form-control
+		{
+			width:80%;
+		}
+		.container {
+			/*width: 553px;*/
+			width: 50%;
+		}
+	</style>
+</head>
+<body class="container">
+
+<main>
+
+	<div class="jumbotron">
+			<h4>Programmation des appels IVR</h4>
+			<div id="error">
+				<%= error %>
+			</div>
+			<form action="/login" method="POST">
+				<div class="form-group">
+					<label for="username">Utilisateur:</label>
+					<input type="text" class="form-control" id="username" name="username">
+				</div>
+				<div class="form-group">
+					<label for="pwd">Mot de passe:</label>
+					<input type="password" class="form-control" id="pwd" name="password">
+				</div>
+				<div class="button-panel">
+					<button type="submit" class="btn btn-default">Connexion</button>
+				</div>
+			</form>
+	</div>
+</main>
+
+<footer>
+    
+</footer>
+
+</body>
+</html>

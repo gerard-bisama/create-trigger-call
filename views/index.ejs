@@ -5,12 +5,20 @@
 
 	<!-- CSS (load bootstrap from a CDN) -->
 	<script src="/js/jquery-2.0.3.min.js"> </script>
+	<script src="/moment/min/moment.min.js"> </script>
 	<link rel="stylesheet" href="/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/css/bootstrap-theme.css">
 	<script src="/js/bootstrap.min.js"> </script>
+	<script src="/build/js/bootstrap-datetimepicker.min.js"> </script>
 	<link rel="stylesheet" href="/css/lmisstyle.css">
+	<link rel="stylesheet" href="/build/css/bootstrap-datetimepicker.min.css">
+	
 	<style>
 		body    { padding-top:50px; }
+		.form-control
+		{
+			width:50%;
+		}
 	</style>
 	<script>
 		function updateListContact()
@@ -26,24 +34,42 @@
         <h4>Start queued flow call</h4>
 	
 	<form action="/startflows" method="POST">
-	<p>
+	
 	Groups:
-	<select  id="group_select" name="group_select">
+	<select  id="group_select" name="group_select" class="form-control">
 		<% groups.forEach(function(group) { %>
 			<option value="<%= group.uuid %>"><%= group.name %></option>
 		<% }); %>
 	</select>
-	</p>
-	<p>
+	
+	
 	Flows:
-	<select  id="flow_select" name="flow_select">
+	<select  id="flow_select" name="flow_select" class="form-control">
 		<% flows.forEach(function(flow) { %>
 			<option value="<%= flow.uuid %>"><%= flow.name %></option>
 		<% }); %>
 	</select>
-	</p>
-	minutes:
-	<select  id="interval_select" name="interval_select">
+	Date de lancement des appels:
+    <div class="row">
+        <div class='col-sm-6'>
+            <div class="form-group">
+                <div class='input-group date' id='datetimepicker1'>
+                    <input type='text' class="form-control" id="date_select" name="date_select"/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker(
+                );
+            });
+        </script>
+    </div>
+	Interval entre chaque appel (minutes):
+	<select  id="interval_select" name="interval_select" class="form-control">
 		<% for(var i=2;i<=10; i+=2){ %>
 			<option value="<%= i %>"><%= i %></option>
 		<% }%>
