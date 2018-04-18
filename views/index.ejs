@@ -14,16 +14,25 @@
 	<link rel="stylesheet" href="/build/css/bootstrap-datetimepicker.min.css">
 	
 	<style>
-		body    { padding-top:50px; }
-		.form-control
-		{
-			width:50%;
-		}
 		#logout_box {
 		  float:right;
 		  margin-right: 14px;
 		  margin-top: 13px;
 		}
+		#button_submit {
+		  float:right;
+		  margin-right: 14px;
+		}
+		body    { padding-top:50px; }
+		.form-control
+		{
+			width:80%;
+		}
+		.container {
+			/*width: 553px;*/
+			width: 60%;
+		}
+		
 	</style>
 	<script>
 		function updateListContact()
@@ -37,13 +46,15 @@
 		<a href="/logout">Logout</a>
 	</div>
 <main>
+	<h3>Programmation des appels IVR</h3>
     <div class="jumbotron">
-        <h4>Start queued flow call</h4>
+        
 	
 	<form action="/startflows" method="POST">
 	
 	Groups:
 	<select  id="group_select" name="group_select" class="form-control">
+		<option value="">Selectionner un groupe des contacts</option>
 		<% groups.forEach(function(group) { %>
 			<option value="<%= group.uuid %>"><%= group.name %></option>
 		<% }); %>
@@ -52,6 +63,7 @@
 	
 	Flows:
 	<select  id="flow_select" name="flow_select" class="form-control">
+		<option value="">Selectionner un flux</option>
 		<% flows.forEach(function(flow) { %>
 			<option value="<%= flow.uuid %>"><%= flow.name %></option>
 		<% }); %>
@@ -77,13 +89,14 @@
     </div>
 	Interval entre chaque appel (minutes):
 	<select  id="interval_select" name="interval_select" class="form-control">
+		<option value="0">Selectionner un intervalle de temp</option>
 		<% for(var i=2;i<=10; i+=2){ %>
 			<option value="<%= i %>"><%= i %></option>
 		<% }%>
 	</select>
 	<!--input type="text" class="form-control" id="interval" name="interval"-->
 	<p>
-	<button type="submit" class="btn btn-default" >Submit</button>
+	<button type="submit" class="btn btn-default" id="button_submit">Submit</button>
 	</p>
 	</form>
     </div>

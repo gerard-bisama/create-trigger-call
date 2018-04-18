@@ -287,6 +287,24 @@ app.post('/startflows', function(req, resRequest) {
 	//console.log("-------------");
 	//return;
 	//check parameter errors
+	if(groupUID=="")
+	{
+		return resRequest.render('error', {
+		menu:"error",error: 'Veuillez selectionner un groupe des contacts!',
+		});
+	}
+	if(flowUID=="")
+	{
+		return resRequest.render('error', {
+		menu:"error",error: 'Veuillez selectionner un flux!',
+		});
+	}
+	if(interval==0)
+	{
+		return resRequest.render('error', {
+		menu:"error",error: 'Veuillez selectionner un intervalle de temps!',
+		});
+	}
 	if(dateSelect=="")
 	{
 		return resRequest.render('error', {
@@ -341,8 +359,8 @@ app.post('/startflows', function(req, resRequest) {
 									}
 									else
 									{
-										console.log("----Get schedule ----");
-										console.log(res.rows);
+										//console.log("----Get schedule ----");
+										//console.log(res.rows);
 										var scheduleId=-1;
 										//Contact already scheduled with that flow
 										if(res.rows.length>0)
