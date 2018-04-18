@@ -5,13 +5,13 @@ var fs = require("fs");
 var bodyParser=require('body-parser')
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var session = require('express-session');
-var userNamePassord=[{'username':'xxxxxx','password':'xxxxxxx'},
-{'username':'xxxxxx','password':'xxxxxxxx'}
+var userNamePassord=[{'username':'rapidpro','password':'12345'},
+{'username':'rapidpro2','password':'12345'}
 ]
 
 //Variable initialization
 const URLRAPIDROAPI ="http://127.0.0.1:8000/api/v2";
-var tokenRP="Authorization: Token "+ "ad3b0914fc43759e011ae6235262b668561e55a9ab";
+var tokenRP="Authorization: Token "+ "d3b0914fc43759e011ae6235262b668561e55a9a";
 
 // set the view engine to ejs
 app.use(session({secret: '2C44774A-D649-4D44-9535-46E296EF984F'}));
@@ -37,7 +37,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 //offset time is used to increase the time by offset in order to  manage time zone offset
-const offsetTimeZone=0;
+const offsetTimeZone=-1;
 const createdByAndModifiedById=3;
 const orgID=1;
 
@@ -265,6 +265,7 @@ app.post('/startflows', function(req, resRequest) {
 		});
 	}
 	var currentDate=new Date(dateSelect);
+	currentDate.setHours(currentDate.getHours()+offsetTimeZone);
 	//var currentDate=new Date();
 	//console.log(interval)
 	const { Pool, Client } = require('pg');
