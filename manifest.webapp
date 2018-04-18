@@ -1,0 +1,24 @@
+{
+  "launch_path": "server_new.js",
+  "default_locale": "en",
+  "activities": {
+    "rapidpro": {
+      "apiurl": "http://127.0.0.1:8000/api/v2",
+      "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  "usersNamePassword":[{"username":"rapidpro","password":"xxxxxx"},
+	{"username":"rapidpro2","password":"xxxxxxxx"}
+	],
+  "appType": "APP",
+  "smsKeyword": "sms2",
+  "simulationMode": "off",
+  "useSMSAPISimulator": "on",
+  "supportSpecialCharset": "on",
+  "name": "Queue call trigger manager",
+  "version": "1.0.0",
+  "description": "App for creating a queue of call in regular interval",
+  "developer": {
+    "name": "Gerard Bisama"
+  }
+}

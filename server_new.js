@@ -5,13 +5,17 @@ var fs = require("fs");
 var bodyParser=require('body-parser')
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var session = require('express-session');
-var userNamePassord=[{'username':'rapidpro','password':'12345'},
-{'username':'rapidpro2','password':'12345'}
-]
+
+const manifest = ReadJSONFile("create-trigger-call/manifest.webapp");
+
+//console.log(manifest);
+
+var userNamePassord=manifest.usersNamePassword;
 
 //Variable initialization
-const URLRAPIDROAPI ="http://127.0.0.1:8000/api/v2";
-var tokenRP="Authorization: Token "+ "d3b0914fc43759e011ae6235262b668561e55a9a";
+const URLRAPIDROAPI =manifest.activities.rapidpro.apiurl;
+//var tokenRP="Authorization: Token "+ "d3b0914fc43759e011ae6235262b668561e55a9a";
+var tokenRP=manifest.activities.rapidpro.token;
 
 // set the view engine to ejs
 app.use(session({secret: '2C44774A-D649-4D44-9535-46E296EF984F'}));
@@ -50,6 +54,23 @@ function errorHandler(err, req, res, next) {
 	  res.status(500);
 	  res.render('error', { error: err });
 	}
+function ReadJSONFile(fileName)
+{
+	var arrayPath=__dirname.split('/');
+	var parentDirectory="/";
+	for(var i=0;i<(arrayPath.length)-1;i++)
+	{
+		parentDirectory+=arrayPath[i]+"/";
+	}
+	//console.log("-------------");
+	var filePath=path.resolve(path.join(parentDirectory, "/", fileName));
+	//console.log(filePath);
+	
+	var contents = fs.readFileSync(filePath);
+	console.log(filePath);
+	var jsonContent = JSON.parse(contents);
+	return jsonContent;
+}
 function incrementHoursByOffSet(originalDate)
 {
 	if(originalDate.includes("T")==true)
@@ -114,7 +135,8 @@ function getListOfGroup(callback)
 	request.open('GET',urlRequest, true);
 	request.setRequestHeader('Content-Type','application/json');	
 	//request.setRequestHeader(tokenRP);
-	request.setRequestHeader('Authorization','Token d3b0914fc43759e011ae6235262b668561e55a9a');
+	//request.setRequestHeader('Authorization','Token d3b0914fc43759e011ae6235262b668561e55a9a');
+	request.setRequestHeader('Authorization','Token '+tokenRP);
 	request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			//console.log("res sms : "+this.responseText);
@@ -143,7 +165,8 @@ function getListOfFlows(callback)
 	request.open('GET',urlRequest, true);
 	request.setRequestHeader('Content-Type','application/json');	
 	//request.setRequestHeader(tokenRP);
-	request.setRequestHeader('Authorization','Token d3b0914fc43759e011ae6235262b668561e55a9a');
+	//request.setRequestHeader('Authorization','Token d3b0914fc43759e011ae6235262b668561e55a9a');
+	request.setRequestHeader('Authorization','Token '+tokenRP);
 	request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			//console.log("res sms : "+this.responseText);
@@ -170,7 +193,8 @@ function getListOfContact(groupUId,callback)
 	var request = new XMLHttpRequest();
 	request.open('GET',urlRequest, true);
 	request.setRequestHeader('Content-Type','application/json');
-	request.setRequestHeader('Authorization','Token d3b0914fc43759e011ae6235262b668561e55a9a');
+	//request.setRequestHeader('Authorization','Token d3b0914fc43759e011ae6235262b668561e55a9a');
+	request.setRequestHeader('Authorization','Token '+tokenRP);
 	request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			//console.log("res sms : "+this.responseText);
@@ -213,6 +237,11 @@ app.get ("/", function (req,res,next)
 app.get ("/login", function (req,res,next)
 {
 	res.render('login',{error:null});
+});
+app.get ("/logout", function (req,res,next)
+{
+	req.session.destroy();
+	res.redirect('/');
 });
 app.get ("/logout", function (req,res,next)
 {
