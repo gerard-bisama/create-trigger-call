@@ -158,6 +158,68 @@ function getListOfGroup(callback)
 		};
 		request.send();
 }
+function getGroupByName(nameOfTheGroup,callback)
+{
+	var urlRequest=`${URLRAPIDROAPI}/groups.json?name=${nameOfTheGroup}`;
+	var request = new XMLHttpRequest();
+	request.open('GET',urlRequest, true);
+	request.setRequestHeader('Content-Type','application/json');	
+	//request.setRequestHeader(tokenRP);
+	//request.setRequestHeader('Authorization','Token d3b0914fc43759e011ae6235262b668561e55a9a');
+	request.setRequestHeader('Authorization','Token '+tokenRP);
+	request.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			//console.log("res sms : "+this.responseText);
+			var myArr=null;
+			if(this.responseText!="")
+			{
+				var myArr = JSON.parse(this.responseText);
+			}
+			
+			//var modifiedArray = [myArr];
+			//console.log(myArr);
+			return callback(myArr);
+			}
+			else if (this.readyState == 4 && this.status != 200)
+			{
+				console.log("Group by name : Error is here !!!");
+				console.log(this.responseText);
+			}
+		};
+		request.send();
+}
+function createGroup(nameOfTheGroup,callback)
+{
+	var urlRequest=`${URLRAPIDROAPI}/groups.json?name=${nameOfTheGroup}`;
+	var request = new XMLHttpRequest();
+	request.open('POST',urlRequest, true);
+	request.setRequestHeader('Content-Type','application/json');
+	//request.setRequestHeader(tokenRP);
+	//request.setRequestHeader('Authorization','Token d3b0914fc43759e011ae6235262b668561e55a9a');
+	request.setRequestHeader('Authorization','Token '+tokenRP);
+	
+	request.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			//console.log("res sms : "+this.responseText);
+			var myArr=null;
+			if(this.responseText!="")
+			{
+				var myArr = JSON.parse(this.responseText);
+			}
+			
+			//var modifiedArray = [myArr];
+			//console.log(myArr);
+			return callback(myArr);
+			}
+			else if (this.readyState == 4 && this.status != 200)
+			{
+				console.log("Create group :Error is here !!!");
+				console.log(this.responseText);
+			}
+		};
+		//request.send();
+		request.send(JSON.stringify({responses:{name:nameOfTheGroup}}));
+}
 function getListOfFlows(callback)
 {
 	var urlRequest=`${URLRAPIDROAPI}/flows.json`;
@@ -248,6 +310,41 @@ app.get ("/logout", function (req,res,next)
 	req.session.destroy();
 	res.redirect('/');
 });
+app.get ('/recordNewContact', function(req, res)
+{
+	var currentDateTime = new Date().toJSON();
+	var currentDate=currentDateTime.split("T")[0];
+	
+	res.json(JSON.stringify({responses:{name:currentDate}}));
+	/*
+	getGroupByName(currentDate,function(listGroups)
+	{
+		var groups=[];
+		var flows=[];
+		if(listGroups!=null)
+		{
+			groups=listGroups.results;
+			if(groups.length==0)//The group does not exist, create a new one
+			{
+				//Create the new group
+				createGroup(currentDate,function(createdGroup) 
+				{
+					console.log(createdGroup);
+					res.json(JSON.stringify({date:currentDate}));
+				});
+			}
+			else //The group exist already
+			{
+				console.log("Get the group");
+				res.json("{{'date':'2018-04-20'}}");
+			}
+		}
+		
+	});
+	*/	
+	
+});
+
 app.get('/index',authorize, function(req, res) {
 	getListOfGroup(function(listGroups)
 	{
