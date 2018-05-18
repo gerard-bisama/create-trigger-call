@@ -4,16 +4,41 @@
   "activities": {
     "rapidpro": {
       "apiurl": "http://127.0.0.1:8000/api/v2",
-      "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      "token": "xxxxxx-xxxx-xxxxxxxxxxxxx"
     }
   },
-  "usersNamePassword":[{"username":"rapidpro","password":"xxxxxx"},
-	{"username":"rapidpro2","password":"xxxxxxxx"}
+  "usersNamePassword":[{"username":"rapidpro","password":"xxxxx"},
+	{"username":"rapidpro2","password":"xxxxxx"}
+	],
+  "intervalBetweenCall":4,
+  "startCallTime":"19:00:00",
+  "arrayfluxParamsForCall":[
+	{
+	"index":1,
+	"name":"semaine 1",
+	"uuid":"2c1cbd42-ae25-459d-98c9-537c8ea8c862",
+	"timeNextTrigger":0,
+	"timeUnit":"m"
+	},
+	{
+	"index":2,
+	"name":"semaine 2",
+	"uuid":"ddbfef2c-904e-467f-84f6-fd83d6c21dae",
+	"timeNextTrigger":5,
+	"timeUnit":"m"
+	},
+	{
+	"index":3,
+	"name":"semaine 3",
+	"uuid":"41c9d198-16c1-4603-a6c6-d99ccbeb2f8e",
+	"timeNextTrigger":10,
+	"timeUnit":"m"
+	}
 	],
   "appType": "APP",
-  "smsKeyword": "sms2",
-  "simulationMode": "off",
-  "useSMSAPISimulator": "on",
+  "offsetTimeZone":-1,
+  "createdByAndModifiedById":3,
+  "orgID":1,
   "supportSpecialCharset": "on",
   "name": "Queue call trigger manager",
   "version": "1.0.0",
