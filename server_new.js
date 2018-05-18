@@ -10,11 +10,14 @@ var session = require('express-session');
 const manifest = ReadJSONFile("create-trigger-call/manifest.webapp");
 
 //console.log(manifest);
+var prefixeGroupPrestataire=manifest.prefixeGroupPrestataire;
 var intervalBetweenCall=manifest.intervalBetweenCall;
-
+var intervalBetweenCall4Prest=manifest.intervalBetweenCall4Prest
 var userNamePassord=manifest.usersNamePassword;//interval between each call in minutes
 var startCallTime=manifest.startCallTime;//Time to start the call
+var startCallTime4Prest=manifest.startCallTime4Prest;
 var listfluxParamsForCall=manifest.arrayfluxParamsForCall;
+var listfluxParamsForCall4Prest=manifest.arrayfluxParamsForCall4Prest;
 
 //Variable initialization
 const URLRAPIDROAPI =manifest.activities.rapidpro.apiurl;
@@ -688,6 +691,312 @@ app.get ('/recordNewContact/uuid=:uuid', function(req, res)
 											var logDate=formatDateInZform(new Date().toJSON());
 											//var interval=((nbrContact)*intervalBetweenCall)+timeNextTrigger;
 											var interval=((nbrContact)*intervalBetweenCall);
+											switch(timeUnit)
+											{
+												case "d"://for days
+													var hours=timeNextTrigger*24;//transform day to 
+													todayDate.setHours(todayDate.getHours()+hours);
+												break;
+												case "h"://for hours
+													todayDate.setHours(todayDate.getHours()+timeNextTrigger);
+												break;
+												case "m":
+													todayDate.setMinutes(todayDate.getMinutes()+timeNextTrigger);
+													break;
+												default:
+													todayDate.setHours(todayDate.getHours()+timeNextTrigger);
+											}
+											todayDate.setMinutes(todayDate.getMinutes()+interval);
+											var formatedDate=formatDateInZform(todayDate.toJSON());
+											/*********Pg Query section*************/
+											const queryToInsertSchedule="insert into schedules_schedule (is_active,created_on,modified_on,status,next_fire\
+											,created_by_id,modified_by_id,repeat_period,repeat_days) values ($1,$2,$3,$4,$5,$6,$7,$8,$9) returning id";
+											var values=[true,logDate,logDate,'S',formatedDate,createdByAndModifiedById,createdByAndModifiedById,0,0];
+											var rowSchedule = client.querySync(queryToInsertSchedule,values);
+											var scheduleIDAdded=rowSchedule[0].id;
+											var logDate=formatDateInZform(new Date().toJSON());
+											//Now insert the conresponding triggers entry
+											/*********Pg Query section*************/
+											const queryToInsertTrigger="insert into triggers_trigger (is_active,created_on,modified_on,trigger_count,is_archived\
+											,trigger_type,created_by_id,flow_id,modified_by_id,org_id,schedule_id,match_type) \
+											values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) returning id";
+											values=[true,logDate,logDate,0,false,'S',createdByAndModifiedById,flowid,createdByAndModifiedById,orgID,scheduleIDAdded,'F'];
+											var rowsTrigger = client.querySync(queryToInsertTrigger,values);
+											var triggerIdAdded=rowsTrigger[0].id;
+											/*********Pg Query section*************/
+											const queryToInsertTriggercontact="insert into triggers_trigger_contacts(trigger_id,contact_id) \
+											values ($1,$2)";
+											values=[triggerIdAdded,contactId];
+											var rowTriggerContact = client.querySync(queryToInsertTriggercontact,values);
+										}
+										
+									}
+								}//End for
+								if(!exitedWithError)
+								{
+									dao.updateCounter(currentDate,function(resUpdate)
+									{
+										if(resUpdate==true)
+										{
+											console.log('update done!')
+											res.send(JSON.stringify({"register":1}));//1 pour ok,0 pour erreur creation of groupe,2 pour flux deja programmé
+										}
+										else
+										{
+											res.send(JSON.stringify({"register":0}));
+										}
+									});
+								}
+							});
+						});
+						//res.send(JSON.stringify({ "groupe":currentDate }));
+					}
+				}
+				
+			});
+	
+		}//end if contact.results
+		else
+		{
+			res.send(JSON.stringify({"register":0}));
+		}
+		
+		//res.send(JSON.stringify({"register":1}));
+	});
+	
+		
+	
+});
+app.get ('/recordNewWorker/uuid=:uuid', function(req, res)
+{
+	var currentDateTime = new Date().toJSON();
+	var currentDate=prefixeGroupPrestataire+"_"+currentDateTime.split("T")[0];
+	
+	var contactUUID=req.params.uuid;
+	getContactByUUID(contactUUID,function(contact)
+	{
+		if(contact.results.length>0)
+		{
+			contactGroups=contact.results[0].groups;
+			var contactGroups=[];
+			for(var i=0;i<contact.results[0].groups.length;i++)
+			{
+				contactGroups.push(contact.results[0].groups[i].uuid);
+			}
+		
+			getGroupByName(currentDate,function(listGroups)
+			{
+				console.log(`Enter group section!!`);
+				var groups=[];
+				var flows=[];
+				if(listGroups!=null)
+				{
+					
+					groups=listGroups.results;
+					if(groups.length==0)//The group does not exist, create a new one
+					{
+						var exitedWithError=false;
+						console.log("###############Creation of a new group#####################");
+						createGroup(currentDate,function(createdGroup) 
+						{
+							
+							//console.log(createdGroup.name);
+							//res.send(createdGroup);
+							//assing the contact to the group
+							var groupInfo=JSON.parse(JSON.stringify({name:createdGroup.name,uuid:createdGroup.uuid}));
+							contactGroups.push(groupInfo.uuid);
+							var nbrContact=0;
+							dao.saveGroupInfo(currentDate,function(resCreateGroup)
+							{
+								if(!resCreateGroup)
+								{
+									res.send(JSON.stringify({"register":0}));
+								}
+								else
+								{
+									updateContactGroup(contactUUID,contactGroups,function(updatedContact)
+									{
+										var Client = require('pg-native');
+										var client = new Client();
+										const connectionString = 'postgresql://temba:temba@localhost:5432/temba';
+										client.connectSync(connectionString);
+										/*********Pg Query section*************/
+										var queryFindContactId='SELECT id,uuid from contacts_contact where  uuid=\''+contactUUID+'\'';
+										var rows = client.querySync(queryFindContactId);
+										var contactId=rows[0].id;
+										var nowDate=new Date().toJSON().split("T")[0];
+										var currentDateString=nowDate+"T"+startCallTime4Prest;
+										var interval=0;
+										for(var i=0;i<listfluxParamsForCall4Prest.length;i++)
+										{
+											var todayDate=new Date(currentDateString);
+											todayDate.setHours(todayDate.getHours()+offsetTimeZone);
+											if(i==(listfluxParamsForCall4Prest[i].index-1))
+											{
+												var flowUID=listfluxParamsForCall4Prest[i].uuid;
+												var timeNextTrigger=listfluxParamsForCall4Prest[i].timeNextTrigger;
+												var timeUnit=listfluxParamsForCall4Prest[i].timeUnit;
+												/*********Pg Query section*************/
+												var queryFindFlowId='SELECT id,uuid from flows_flow where  uuid = \''+flowUID+'\'';
+												rowsFlowId = client.querySync(queryFindFlowId);
+												var flowid=rowsFlowId[0].id;
+												//Check if the contact for this flow has been already scheduled
+												/*********Pg Query section*************/
+												var queryFindScheduleId='select tgt.schedule_id,tgc.contact_id as contact_id from triggers_trigger as tgt \
+															join schedules_schedule as sch on sch.id=tgt.schedule_id \
+															join triggers_trigger_contacts as tgc on tgc.trigger_id=tgt.id \
+															where tgt.flow_id='+flowid+' and tgc.contact_id='+contactId;
+												rowsScheduleContact = client.querySync(queryFindScheduleId);
+												var scheduleId=-1;
+												//scheduleId=
+												//if the contact already in existing update it
+												if(rowsScheduleContact.length>0)
+												{
+													exitedWithError=true;
+													scheduleId=rowsScheduleContact[0].schedule_id;
+													res.end(JSON.stringify({"register":2}));
+													break;
+												}
+												//if not in an existing schedule create a new schedule
+												else
+												{
+													console.log("Add new entry!!");
+													var logDate=formatDateInZform(new Date().toJSON());
+													switch(timeUnit)
+													{
+														case "d"://for days
+															var hours=timeNextTrigger*24;//transform day to 
+															todayDate.setHours(todayDate.getHours()+hours);
+														break;
+														case "h"://for hours
+															todayDate.setHours(todayDate.getHours()+timeNextTrigger);
+														break;
+														case "m":
+															todayDate.setMinutes(todayDate.getMinutes()+timeNextTrigger);
+														break;
+														default:
+															todayDate.setHours(todayDate.getHours()+timeNextTrigger);
+													}
+													todayDate.setMinutes(todayDate.getMinutes()+interval);
+													console.log(`nexttime: ${todayDate} and nextimeTrigger=${timeNextTrigger}`);
+													var formatedDate=formatDateInZform(todayDate.toJSON());
+													console.log(`formatedDate: ${formatedDate}`);
+													/*********Pg Query section*************/
+													const queryToInsertSchedule="insert into schedules_schedule (is_active,created_on,modified_on,status,next_fire\
+													,created_by_id,modified_by_id,repeat_period,repeat_days) values ($1,$2,$3,$4,$5,$6,$7,$8,$9) returning id";
+													var values=[true,logDate,logDate,'S',formatedDate,createdByAndModifiedById,createdByAndModifiedById,0,0];
+													var rowsSchedule = client.querySync(queryToInsertSchedule,values);
+													var scheduleIDAdded=rowsSchedule[0].id;
+													var logDate=formatDateInZform(new Date().toJSON());
+													//Now insert the conresponding triggers entry
+													/*********Pg Query section*************/
+													const queryToInsertTrigger="insert into triggers_trigger (is_active,created_on,modified_on,trigger_count,is_archived\
+													,trigger_type,created_by_id,flow_id,modified_by_id,org_id,schedule_id,match_type) \
+													values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) returning id";
+													values=[true,logDate,logDate,0,false,'S',createdByAndModifiedById,flowid,createdByAndModifiedById,orgID,scheduleIDAdded,'F'];
+													var rowsTrigger = client.querySync(queryToInsertTrigger,values);
+													var triggerIdAdded=rowsTrigger[0].id;
+													/*********Pg Query section*************/
+													const queryToInsertTriggercontact="insert into triggers_trigger_contacts(trigger_id,contact_id) \
+																						values ($1,$2)";
+													values=[triggerIdAdded,contactId];
+													rowsTriggerContact = client.querySync(queryToInsertTriggercontact,values);
+													
+												}
+												
+											}
+										}//End for
+										//Then update the counter
+										//res.send(JSON.stringify({"register":1}));
+										if(!exitedWithError)
+										{
+											dao.updateCounter(currentDate,function(resUpdate)
+											{
+												if(resUpdate==true)
+												{
+													console.log('update done!')
+													res.send(JSON.stringify({"register":1}));
+												}
+												else
+												{
+													res.send(JSON.stringify({"register":0}));
+												}
+											});
+										}
+										
+										
+									});
+							
+								}
+							});
+							//and tail mongo create group
+						});
+						
+					}
+					else //The group exist already
+					{
+						var exitedWithError=false;
+						//console.log("Get the group");
+						console.log("###############Assignment to an existing group#####################");
+						//res.send(JSON.stringify({ "groupe":currentDate }));
+						var groupeUUID=listGroups.results[0].uuid;
+						contactGroups.push(groupeUUID);
+						//get Number of contacts in the group
+						dao.getCounter(currentDate,function(_nbrContact)
+						{
+							var nbrContact=_nbrContact;
+							console.log(`Existing contact=${nbrContact}`);
+							updateContactGroup(contactUUID,contactGroups,function(updatedContact)
+							{
+								var Client = require('pg-native');
+								var client = new Client();
+								const connectionString = 'postgresql://temba:temba@localhost:5432/temba';
+								client.connectSync(connectionString);
+								/*********Pg Query section*************/
+								var queryFindContactId='SELECT id,uuid from contacts_contact where  uuid=\''+contactUUID+'\'';
+								var rowsContact = client.querySync(queryFindContactId);
+								var contactId=rowsContact[0].id;
+								var nowDate=new Date().toJSON().split("T")[0];
+								var currentDateString=nowDate+"T"+startCallTime4Prest;
+								
+								
+								for(var i=0;i<listfluxParamsForCall4Prest.length;i++)
+								{
+									var todayDate=new Date(currentDateString);
+									todayDate.setHours(todayDate.getHours()+offsetTimeZone);
+									if(i==(listfluxParamsForCall4Prest[i].index-1))
+									{
+										
+										var flowUID=listfluxParamsForCall4Prest[i].uuid;
+										var timeNextTrigger=listfluxParamsForCall4Prest[i].timeNextTrigger;
+										var timeUnit=listfluxParamsForCall4Prest[i].timeUnit;
+										/*********Pg Query section*************/
+										var queryFindFlowId='SELECT id,uuid from flows_flow where  uuid = \''+flowUID+'\'';
+										var rowsFlows = client.querySync(queryFindFlowId);
+										var flowid=rowsFlows[0].id;
+										//Check if the contact for this flow has been already scheduled
+										/*********Pg Query section*************/
+										var queryFindScheduleId='select tgt.schedule_id,tgc.contact_id as contact_id from triggers_trigger as tgt \
+													join schedules_schedule as sch on sch.id=tgt.schedule_id \
+													join triggers_trigger_contacts as tgc on tgc.trigger_id=tgt.id \
+													where tgt.flow_id='+flowid+' and tgc.contact_id='+contactId;
+										var rowsScheduleContact = client.querySync(queryFindScheduleId);
+										var scheduleId=-1;
+										//rows = client.querySync(queryFindScheduleId);
+										if(rowsScheduleContact.length>0)
+										{
+											exitedWithError=true;
+											scheduleId=rowsScheduleContact[0].schedule_id;
+											res.end(JSON.stringify({"register":2}));//flux deja programmé
+											break;
+											//return;
+										}
+										else
+										{
+											console.log("Add new entry!!");
+											var logDate=formatDateInZform(new Date().toJSON());
+											//var interval=((nbrContact)*intervalBetweenCall)+timeNextTrigger;
+											var interval=((nbrContact)*intervalBetweenCall4Prest);
 											switch(timeUnit)
 											{
 												case "d"://for days
