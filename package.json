@@ -1,6 +1,10 @@
 {
     "name": "flow_call",
-    "main": "server.js",
+    "description": "Provide app and webhook to schedule calls ",
+    "main": "server_new.js",
+    "scripts": {
+    "start": "node start.js"
+	},
     "dependencies": {
         "ejs": "^2.5.8",
         "express": "^4.16.3",
@@ -8,7 +12,11 @@
         "body-parser":"^1.17.2",
         "pg":"^7.4.1",
         "bootstrap-datetimepicker-npm":"^4.17.37-npm",
-        "express-session":"^1.15.3"
+        "express-session":"^1.15.3",
+        "mongodb": "^2.2.11",
+        "mongoose": "^4.6.8",
+        "pg-native": "^3.0.0",
+        "forever-monitor": "^1.7.1"
         
     }
 }
