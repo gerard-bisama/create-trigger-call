@@ -1089,7 +1089,22 @@ app.get('/index',authorize, function(req, res) {
 			{
 				if(listFlows!=null)
 				{
-					flows=listFlows.results;
+					//console.log(listFlows.results);
+					//console.log(listFlows.length);
+					//flows.push()
+					for(var i=0;i<listFlows.results.length;i++)
+					{
+						//console.log(listFlows.results[i].archived);
+						if(listFlows.results[i].archived==false)
+						{
+							flows.push(listFlows.results[i]);
+						}
+						else
+						{
+							continue;
+						}
+					}
+					//flows=listFlows.results;
 				}
 				res.render('index',{groups:groups,flows:flows});
 			});
